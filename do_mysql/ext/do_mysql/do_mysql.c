@@ -140,9 +140,9 @@ MYSQL_RES *do_mysql_cCommand_execute_sync(VALUE self, VALUE connection, MYSQL *d
 MYSQL_RES *do_mysql_cCommand_execute_async(VALUE self, VALUE connection, MYSQL *db, VALUE query) {
   int retval;
 
-  if ((retval = mysql_ping(db)) && mysql_errno(db) == CR_SERVER_GONE_ERROR) {
-    do_mysql_full_connect(connection, db);
-  }
+//if ((retval = mysql_ping(db)) && mysql_errno(db) == CR_SERVER_GONE_ERROR) {
+//  do_mysql_full_connect(connection, db);
+//}
 
   struct timeval start;
   const char *str = rb_str_ptr_readonly(query);
