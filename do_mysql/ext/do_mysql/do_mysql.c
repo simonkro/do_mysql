@@ -139,16 +139,20 @@ MYSQL_RES *do_mysql_cCommand_execute_sync(VALUE self, VALUE connection, MYSQL *d
 #else
 MYSQL_RES *do_mysql_cCommand_execute_async(VALUE self, VALUE connection, MYSQL *db, VALUE query) {
   int retval;
-
-//if ((retval = mysql_ping(db)) && mysql_errno(db) == CR_SERVER_GONE_ERROR) {
-//  do_mysql_full_connect(connection, db);
-//}
-
   struct timeval start;
+  gettimeofday(&start, NULL);
+
+  if (NUM2INT(rb_iv_get(connection, "@last_query_time")) != start.tv_sec) {
+    rb_iv_set(connection, "@last_query_time", INT2NUM(start.tv_sec));
+
+    if ((retval = mysql_ping(db)) && mysql_errno(db) == CR_SERVER_GONE_ERROR) {
+      do_mysql_full_connect(connection, db);
+    }
+  }
+
   const char *str = rb_str_ptr_readonly(query);
   long len = rb_str_len(query);
 
-  gettimeofday(&start, NULL);
   retval = mysql_send_query(db, str, len);
 
   CHECK_AND_RAISE(retval, query);
@@ -356,6 +360,7 @@ void do_mysql_full_connect(VALUE self, MYSQL *db) {
 VALUE do_mysql_cConnection_initialize(VALUE self, VALUE uri) {
   rb_iv_set(self, "@using_socket", Qfalse);
   rb_iv_set(self, "@ssl_cipher", Qnil);
+  rb_iv_set(self, "@last_query_time", INT2NUM(0));
 
   VALUE r_host = rb_funcall(uri, rb_intern("host"), 0);
 
