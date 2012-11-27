@@ -1,84 +1,98 @@
-DataObjects README
-==================
+# do_mysql
 
-DataObjects.rb is an attempt to rewrite existing Ruby database drivers to
-conform to one, standard interface.
+* <http://dataobjects.info>
 
-At present the following drivers are available:
+## Description
 
-<table>
-  <tr>
-    <th>Database Vendor</th>
-    <th>MRI (1.8.6/7) / 1.9</th>
-    <th>JRuby</th>
-  </tr>
-  <tr>
-    <td>MySQL</td>
-    <td>x</td>
-    <td>x</td></tr>
-  <tr>
-    <td>Oracle</td>
-    <td>x</td>
-    <td>x</td></tr>
-  <tr>
-    <td>PostgreSQL</td>
-    <td>x</td>
-    <td>x</td></tr>
-  <tr>
-    <td>SQLite3</td>
-    <td>x</td>
-    <td>x</td></tr>
-  <tr>
-    <td>Derby</td>
-    <td>-</td>
-    <td>x</td></tr>
-  <tr>
-    <td>H2</td>
-    <td>-</td>
-    <td>x</td></tr>
-  <tr>
-    <td>HSQLDB</td>
-    <td>-</td>
-    <td>x</td></tr>
-  <tr>
-    <td>SQL Server</td>
-    <td><em>pending</em></td>
-    <td>x</td></tr>
-</table>
+A MySQL driver for DataObjects.
 
-There is experimental support for [Rubinius][rubinius].
+## Features/Problems
 
-More drivers are
-currently under development. If you feel like living on the edge, install and
-test drivers directly from this repository.
+This driver implements the DataObjects API for the MySQL relational database.
 
-Introduction
-------------
+## Synopsis
 
-To connect to and query the database, DataObjects relies on native extensions.
-Native extensions have been written in both C (for Ruby 1.8.6/7 (MRI), Ruby
-1.9.x (YARV) and Rubinius platform) and Java (for the JRuby platform).
-Individual drivers may include extensions for both Ruby MRI and JRuby, or one
-or the other.
+An example of usage:
 
-C extensions have been written using according to each vendor API. Java drivers
-use the standard JDBC API. Although there are dialectical differences between
-the Java drivers, the JDBC API ensures a reasonable amount of commonality. As
-such, the Java extensions rely on a common do\_jdbc gem, which wraps code that
-is common to all of the Java extensions.
+    # default user (root, no password); default port (3306)
+    DataObjects::Connection.new("mysql://host/database")
+    # specified user, specified port
+    DataObjects::Connection.new("mysql://user:pass@host:8888/database")
 
-Installation
-------------
+    @connection = DataObjects::Connection.new("mysql://localhost/employees")
+    @reader = @connection.create_command('SELECT * FROM users').execute_reader
+    @reader.next!
 
-To install a driver from the repository `cd` into the driver directory and use
-the provided `rake install` task to install for the default platform.
+## Requirements
 
-Copyright and Licensing
------------------------
+This driver is provided for the following platforms:
+ * Ruby MRI (1.8.6/7), 1.9: tested on Linux, Mac OS X and Windows platforms.
+ * JRuby 1.3.1 + (1.4+ recommended).
+ * Rubinius (experimental).
 
-Please see the copyright notices in each individual driver README.markdown or
-LICENSE file. Java-based drivers bundle JDBC driver JAR files, which may be
-provided under a license that is more restrictive than the MIT License used by the
-data\_objects gem itself.
+Additionally you should have the following prerequisites:
+ * `data_objects` gem
+ * `do_jdbc` gem (shared library), if running on JRuby.
 
-[rubinius]:http://rubini.us/
+## Install
+
+To install the gem:
+
+    gem install do_mysql
+
+If installing the MRI/1.9/Rubinius extension on OS X and you install a version
+of MySQL that was built for only a single architecture, you will need to set
+`ARCHFLAGS` appropriately:
+
+    sudo env ARCHFLAGS="-arch i386" gem install do_mysql
+
+To compile and install from source:
+
+* Install rake-compiler: `gem install rake-compiler`.
+
+* For MRI/Rubinius extensions:
+  * Install the `gcc` compiler. On OS X, you should install XCode tools. On
+    Ubuntu, run `apt-get install build-essential`.
+  * Install Ruby and MySQL.
+  * Install the Ruby and MySQL development headers.
+    * On Debian-Linux distributions, you can install the following packages
+      with `apt`: `ruby-dev` `libmysqlclient15-dev`.
+  * If you want to cross-compile for Windows:
+    * Install MinGW:
+      * On Debian-Linux distributions, you can install the following package
+        with `apt`: `mingw32`.
+      * On OS X, this can install the following package with MacPorts: `i386-mingw32-gcc`.
+    * Run `rake-compiler cross-ruby`.
+    * Run `rake-compiler update-config`.
+
+ * Then, install this driver with `(jruby -S) rake install`.
+
+For more information, see the MySQL driver wiki page:
+<http://wiki.github.com/datamapper/do/mysql>.
+
+## Developers
+
+Follow the above installation instructions. Additionally, you'll need:
+  * `rspec` gem for running specs.
+  * `YARD` gem for generating documentation.
+
+See the DataObjects wiki for more comprehensive information on installing and
+contributing to the JRuby-variant of this driver:
+<http://wiki.github.com/datamapper/do/jruby>.
+
+To run specs:
+
+    rake spec
+
+To run specs without compiling extensions first:
+
+    rake spec_no_compile
+
+To run individual specs:
+
+    rake spec SPEC=spec/connection_spec.rb
+
+## License
+
+This code is licensed under an **MIT (X11) License**. Please see the
+accompanying `LICENSE` file.
